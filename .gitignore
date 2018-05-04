@@ -19,7 +19,7 @@ out/
 
 # 忽略Mac .DS_Store文件
 .DS_Store
-richgo*/**/config/pro/
+appointment*/**/config/pro/
 # 忽略日志文件
 logs/
 *.log
