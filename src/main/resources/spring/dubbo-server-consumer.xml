@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+						http://www.springframework.org/schema/beans/spring-beans.xsd
+						 http://code.alibabatech.com/schema/dubbo
+						  http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+
+
+	<!-- 提供方应用信息，用于计算依赖关系 -->
+	<!--<dubbo:application name="${dubbo.application.name}" />-->
+	<!-- 使用multicast广播注册中心暴露服务地址 -->
+	<!-- <dubbo:registry address="multicast://224.5.6.7:1234" /> -->
+	<!-- 使用zookeeper注册中心暴露服务地址 即zookeeper的所在服务器ip地址和端口号 -->
+	<dubbo:registry protocol="zookeeper" address="${dubbo.registry.address}" check="false" />
+	<!--客户管理系统服务-->
+	<dubbo:reference id="customerService" interface="com.customer.service.CustomerService"  version="1.0.0" timeout="20000" retries="0"  />
+	<!--员工管理系统服务-->
+	<dubbo:reference id="empService" interface="com.user.service.emp.EmpService" version="1.0.0" timeout="20000" retries="0"  />
+	<!--积分等级管理系统服务-->
+	<dubbo:reference id="customerPointService" interface="com.point.service.CustomerPointService"  version="1.0.0" timeout="20000" retries="0" />
+	<!--礼品订单操作服务-->
+	<dubbo:reference id="persentOrederService" interface="com.point.service.PersentOrederService"  version="1.0.0" timeout="20000" retries="0" />
+
+	<dubbo:reference id="customerPOService" interface="com.customer.service.CustomerPOService"  version="1.0.0" timeout="20000" retries="0"  />
+	<!--多金3系统-->
+	<dubbo:reference id="dj3QueryService" interface="com.dj3.service.Dj3QueryService" version="1.0.0" timeout="20000" retries="0" />
+	<!--银行卡-->
+	<dubbo:reference id="accoBankService" interface="com.customer.service.AccoBankService" version="1.0.0" timeout="20000" retries="0" />
+	<!--附件接口-->
+	<dubbo:reference id="attachmentService" interface="com.customer.service.AttachmentService" version="1.0.0" timeout="20000" retries="0"   />
+	<!--客户详情(理顾关系)-->
+	<dubbo:reference id="customerEmpRelationService" interface="com.customer.service.CustomerEmpRelationService" version="1.0.0" timeout="20000" retries="0" />
+	<!--客户账户信息-->
+	<dubbo:reference id="customerAccountService" interface="com.customer.service.CustomerAccountService" version="1.0.0" timeout="120000" retries="0"  />
+	<!-- 登录日志服务 -->
+	<dubbo:reference id="loginLogService" interface="com.customer.service.LoginLogService" version="1.0.0" timeout="20000" retries="0"   />
+	<dubbo:reference id="dictionaryService" interface="com.customer.service.DictionaryService" version="1.0.0" retries="0" timeout="6000"  />
+
+	<!--省市区域及支行信息 v1.4.4 1/2 -->
+	<dubbo:reference id="iRegionBranchbankService" interface="com.customer.service.IRegionBranchbankService" version="1.0.0" timeout="20000" retries="0"/>
+
+	<!-- 短信验证码接口 -->
+	<dubbo:reference id="smsAuthService" interface="com.customer.service.SmsAuthService"  version="1.0.0" timeout="20000" retries="0"/>
+
+	<!--企金认证-->
+	<dubbo:reference id="iOrgAuthService" interface="com.customer.service.audit.IOrgAuthService" version="1.0.0" retries="0" timeout="20000" />
+
+	<!--客户联系电话-->
+	<dubbo:reference id="customerContactService" interface="com.customer.service.CustomerContactService"  version="1.0.0" retries="0" timeout="20000"/>
+	<dubbo:reference id="iAssetShareService" interface="com.chtwm.publicFunds.service.IAssetShareService" version="1.0.0" timeout="20000" retries="0"/>
+	<dubbo:reference id="pointClassService" interface="com.point.service.PointClassService" version="1.0.0" timeout="20000" retries="0"/>
+</beans>

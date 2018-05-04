@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:aop="http://www.springframework.org/schema/aop"
+	   xsi:schemaLocation="http://www.springframework.org/schema/mvc
+						http://www.springframework.org/schema/mvc/spring-mvc.xsd
+						http://www.springframework.org/schema/beans
+						http://www.springframework.org/schema/beans/spring-beans.xsd
+						http://www.springframework.org/schema/context
+          				http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+	<!--注解控测器 设置使用注解的类所在的jar包 -->
+	<context:component-scan base-package="com.customer.outside">
+		<!-- 必须使service层在control之前被扫描，否则control中装载的service不包含事务增强 -->
+		<!-- 扫描所有的controller 但是不扫描service -->
+		<context:include-filter type="annotation"
+			expression="org.springframework.stereotype.Controller" />
+		<context:exclude-filter type="annotation"
+			expression="org.springframework.stereotype.Service" />
+	</context:component-scan>
+
+	<!-- 映射静态资源 -->
+	<!--<mvc:resources mapping="/js/**" location="/js/"/> <mvc:resources mapping="/css/**" 
+		location="/css/"/> <mvc:resources mapping="/images/**" location="/images/"/> -->
+	<!-- 对静态资源文件的访问，交给default servlet handler处理 -->
+	<mvc:default-servlet-handler />
+
+	<!-- MVC注解驱动 -->
+	<!-- 对象接受页面参数,字符串转日期格式 -->
+	<!--<bean id="dateConvert" class="com.iomp.util.DateConvert"/>
+	<bean id="conversionService" class="org.springframework.format.support.FormattingConversionServiceFactoryBean">
+		<property name="converters">
+			<set>
+				<ref bean="dateConvert"/>
+			</set>
+		</property>
+	</bean>
+	<mvc:annotation-driven conversion-service="conversionService"/>-->
+	<bean id="dateConvert" class="com.appointment.outside.util.DateConvert"/>
+	<bean id="conversionService" class="org.springframework.format.support.FormattingConversionServiceFactoryBean">
+		<property name="converters">
+			<set>
+				<ref bean="dateConvert"/>
+			</set>
+		</property>
+	</bean>
+
+	<mvc:annotation-driven conversion-service="conversionService">
+		<mvc:message-converters ><!--register-defaults="false"-->
+			<bean id="jacksonMessageConverter"
+				  class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+				<property name="supportedMediaTypes">
+					<list>
+						<!-- 这里顺序不能反，一定先写text/html,不然ie下出现下载提示 -->
+						<value>text/html;charset=UTF-8</value>
+						<value>application/json;charset=UTF-8</value>
+					</list>
+				</property>
+				<property name="objectMapper"> <!--返回json串null值处理为""-->
+					<bean class="com.appointment.outside.interceptor.ObjectMappingCustomer"></bean>
+				</property>
+
+			</bean>
+		</mvc:message-converters>
+	</mvc:annotation-driven>
+
+	<!--<bean
+			class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+		<property name="messageConverters">
+			<list>
+				<bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+					<property name="supportedMediaTypes">
+						<list>
+							<value>text/plain;charset=UTF-8</value>
+							<value>application/json;charset=UTF-8</value>
+						</list>
+					</property>
+					<property name="objectMapper">
+						<bean class="com.interceptor.ObjectMappingCustomer"></bean>
+					</property>
+				</bean>
+			</list>
+		</property>
+	</bean>-->
+	<!-- 使用FastJson会出现swagger无法使用-->
+	<!--<mvc:annotation-driven>
+		<mvc:message-converters register-defaults="false">
+			<bean class="com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter">
+				<property name="supportedMediaTypes">
+					<list>
+						&lt;!&ndash; 这里顺序不能反，一定先写text/html,不然ie下出现下载提示 &ndash;&gt;
+						<value>text/html;charset=UTF-8</value>
+						<value>application/json;charset=UTF-8</value>
+					</list>
+				</property>
+				<property name="features">
+					<array>
+						<value>WriteMapNullValue</value>
+						<value>WriteNullStringAsEmpty</value>
+					</array>
+				</property>
+			</bean>
+		</mvc:message-converters>
+	</mvc:annotation-driven>-->
+
+
+	<bean id="contentNegotiationManager"
+		class="org.springframework.web.accept.ContentNegotiationManagerFactoryBean">
+		<property name="favorParameter" value="false" />
+		<!-- 设置为true以忽略对Accept Header的支持 -->
+		<property name="ignoreAcceptHeader" value="true" />
+
+		<!-- 在没有扩展名时即: "/blog/1" 时的默认展现形式 -->
+		<property name="defaultContentType" value="text/html" />
+
+		<!-- 扩展名至mimeType的映射,即 /blog.json => application/json -->
+		<property name="mediaTypes">
+			<map>
+				<entry key="html" value="text/html" />
+				<entry key="json" value="application/json" />
+
+				<!-- 后续需要支持这些格式，再放开 <entry key="pdf" value="application/pdf" /> <entry 
+					key="xsl" value="application/vnd.ms-excel" /> <entry key="xml" value="application/xml" 
+					/> -->
+			</map>
+		</property>
+	</bean>
+
+	<bean
+		class="org.springframework.web.servlet.view.ContentNegotiatingViewResolver">
+		<property name="order" value="1" />
+		<property name="contentNegotiationManager" ref="contentNegotiationManager" />
+
+		<property name="viewResolvers">
+			<list>
+				<bean
+					class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+					<property name="viewClass"
+						value="org.springframework.web.servlet.view.JstlView" />
+					<property name="prefix" value="/" />
+					<property name="suffix" value=".html" />
+				</bean>
+			</list>
+		</property>
+
+		<property name="defaultViews">
+			<list>
+				<!-- application/json ModelAndView里的数据变成JSON -->
+				<bean
+					class="org.springframework.web.servlet.view.json.MappingJackson2JsonView" />
+				<!-- application/xml -->
+				<!-- <bean class="org.springframework.web.servlet.view.xml.MarshallingView"> 
+					<property name="marshaller"> <bean class="org.springframework.oxm.xstream.XStreamMarshaller"> 
+					</bean> </property> </bean> -->
+			</list>
+		</property>
+	</bean>
+
+
+	<!-- 文件上传解析器 id 必须为multipartResolver 10M -->
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<!-- 上传的最大字节数，-1代表没有任何限制 1024*1024*4=4194304即4m -->
+		<property name="maxUploadSize" value="4194304" />
+		<!-- 读取文件到内存中最大的字节数，默认是1024 -->
+		<property name="maxInMemorySize" value="1024" />
+		<!-- 文件上传头部编码，默认是iso-8859-1，注意defaultEncoding必须和前端页面pageEncoding属性一致，以便能正常读取文件 -->
+		<property name="defaultEncoding" value="UTF-8" />
+		<!-- 文件上传暂存目录，文件上传完成之后会清除该目录，模式是在servlet容器的临时目录，例如tomcat的话，就是在tomcat文件夹的temp目录 -->
+		<!--<property name="uploadTempDir" value="/upload" />-->
+	</bean>
+
+	<bean class="com.appointment.outside.base.swagger.IompSwaggerConfig" />
+	<bean class="com.appointment.outside.base.resolver.MySimpleMappingExceptionResolver" />
+
+	<bean id="methodExecuteTime" class="com.common.aspect.Aspect" />
+
+	<aop:config>
+		<aop:aspect id="logMethodExecuteTime" ref="methodExecuteTime" >
+			<aop:pointcut id="controllerMethods" expression="execution(* com.customer.outside.controller..*.*(..))" />
+			<aop:around method="methodExecuteTime" pointcut-ref="controllerMethods" />
+		</aop:aspect>
+	</aop:config>
+</beans>
